@@ -1,10 +1,10 @@
 package Client;
 
 import Connection.*;
+import org.springframework.security.crypto.encrypt.*;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 
 public class Client {
@@ -12,6 +12,7 @@ public class Client {
     private static ModelGuiClient model;
     private static ViewGuiClient gui;
     private volatile boolean isConnect = false; //флаг отобаржающий состояние подключения клиента  серверу
+    private TextEncryptor encryptor;
 
     public boolean isConnect() {
         return isConnect;
@@ -48,8 +49,9 @@ public class Client {
                     //создаем сокет и объект connection
                     Socket socket = new Socket(addressServer, port);
                     connection = new Connection(socket);
-                    isConnect = true;
+                    encryptor = Encryptors.text(String.valueOf(port), String.valueOf(String.valueOf(port).substring(0, 2).hashCode()));
                     gui.addMessage("Сервисное сообщение: Вы подключились к серверу.\n");
+                    isConnect = true;
                     break;
                 } catch (Exception e) {
                     gui.errorDialogWindow("Произошла ошибка! Возможно Вы ввели не верный адрес сервера или порт. Попробуйте еще раз");
@@ -99,9 +101,9 @@ public class Client {
     //метод отправки сообщения предназначенного для других пользователей на сервер
     protected void sendMessageOnServer(String text) {
         try {
-            connection.send(new Message(MessageType.TEXT_MESSAGE, text));
+            connection.send(new Message(MessageType.TEXT_MESSAGE, String.valueOf(encryptor.encrypt(text))));
         } catch (Exception e) {
-            gui.errorDialogWindow("Ошибка при отправки сообщения");
+            gui.errorDialogWindow("Ошибка при отправке сообщения");
         }
     }
 
@@ -112,9 +114,11 @@ public class Client {
                 Message message = connection.receive();
                 //если тип TEXT_MESSAGE, то добавляем текст сообщения в окно переписки
                 if (message.getTypeMessage() == MessageType.TEXT_MESSAGE) {
-                    gui.addMessage(message.getTextMessage());
+                    gui.addMessage(message.getTextMessage().split(" ")[0] + " " +
+                            encryptor.decrypt(message.getTextMessage().substring(0, message.getTextMessage().
+                                    length()-1).split(" ")[1]) + "\n");
                 }
-                //если сообщение с типо USER_ADDED добавляем сообщение в окно переписки о новом пользователе
+                //если сообщение с типом USER_ADDED добавляем сообщение в окно переписки о новом пользователе
                 if (message.getTypeMessage() == MessageType.USER_ADDED) {
                     model.addUser(message.getTextMessage());
                     gui.refreshListUsers(model.getUsers());

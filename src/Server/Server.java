@@ -87,13 +87,13 @@ public class Server {
     //класс-поток, который запускается при принятии сервером нового сокетного соединения с клиентом, в конструктор
     //передается объект класса Socket
     private class ServerThread extends Thread {
-        private Socket socket;
+        private final Socket socket;
 
         public ServerThread(Socket socket) {
             this.socket = socket;
         }
 
-        //метод который реализует запрос сервера у клиента имени и добавлении имени в мапу
+        //метод который реализует запрос сервера у клиента имени и добавлении имени в мап
         private String requestAndAddingUser(Connection connection) {
             while (true) {
                 try {
@@ -131,6 +131,7 @@ public class Server {
                     //приняли сообщение от клиента, если тип сообщения TEXT_MESSAGE то пересылаем его всем пользователям
                     if (message.getTypeMessage() == MessageType.TEXT_MESSAGE) {
                         String textMessage = String.format("%s: %s\n", userName, message.getTextMessage());
+                        gui.refreshDialogWindowServer(textMessage);
                         sendMessageAllUsers(new Message(MessageType.TEXT_MESSAGE, textMessage));
                     }
                     //если тип сообщения DISABLE_USER, то рассылаем всем пользователям, что данный пользователь покинул чат,
@@ -159,7 +160,7 @@ public class Server {
                 String nameUser = requestAndAddingUser(connection);
                 messagingBetweenUsers(connection, nameUser);
             } catch (Exception e) {
-                gui.refreshDialogWindowServer(String.format("Произошла ошибка при рассылке сообщения от пользователя!\n"));
+                gui.refreshDialogWindowServer("Произошла ошибка при рассылке сообщения от пользователя!\n");
             }
         }
     }

@@ -2,21 +2,19 @@ package Client;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Set;
 
 public class ViewGuiClient {
     private final Client client;
-    private JFrame frame = new JFrame("Чат");
-    private JTextArea messages = new JTextArea(30, 20);
-    private JTextArea users = new JTextArea(30, 15);
-    private JPanel panel = new JPanel();
-    private JTextField textField = new JTextField(40);
-    private JButton buttonDisable = new JButton("Отключиться");
-    private JButton buttonConnect = new JButton("Подключиться");
+    private final JFrame frame = new JFrame("Чат");
+    private final JTextArea messages = new JTextArea(30, 20);
+    private final JTextArea users = new JTextArea(30, 15);
+    private final JPanel panel = new JPanel();
+    private final JTextField textField = new JTextField(40);
+    private final JButton buttonDisable = new JButton("Отключиться");
+    private final JButton buttonConnect = new JButton("Подключиться");
 
     public ViewGuiClient(Client client) {
         this.client = client;
@@ -46,24 +44,11 @@ public class ViewGuiClient {
             }
         });
         frame.setVisible(true);
-        buttonDisable.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                client.disableClient();
-            }
-        });
-        buttonConnect.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                client.connectToServer();
-            }
-        });
-        textField.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                client.sendMessageOnServer(textField.getText());
-                textField.setText("");
-            }
+        buttonDisable.addActionListener(e -> client.disableClient());
+        buttonConnect.addActionListener(e -> client.connectToServer());
+        textField.addActionListener(e -> {
+            client.sendMessageOnServer(textField.getText());
+            textField.setText("");
         });
     }
 
@@ -71,13 +56,13 @@ public class ViewGuiClient {
         messages.append(text);
     }
 
-    //метод обновляющий списо имен подлючившихся пользователей
+    //метод обновляющий список имен подключившихся пользователей
     protected void refreshListUsers(Set<String> listUsers) {
         users.setText("");
         if (client.isConnect()) {
             StringBuilder text = new StringBuilder("Список пользователей:\n");
             for (String user : listUsers) {
-                text.append(user + "\n");
+                text.append(user).append("\n");
             }
             users.append(text.toString());
         }
